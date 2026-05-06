@@ -266,8 +266,8 @@ ExecuteResult execute_statement(Statement* statement, Table* table) {
 
 void serialize_row(Row* source, void* destination) {
     memcpy(destination + ID_OFFSET, &(source->id), ID_SIZE);
-    strncpy(destination + USERNAME_OFFSET, source->username, USERNAME_SIZE);
-    strncpy(destination + EMAIL_OFFSET, source->email, EMAIL_SIZE);
+    memcpy(destination + USERNAME_OFFSET, &(source->username), USERNAME_SIZE);
+    memcpy(destination + EMAIL_OFFSET, &(source->email), EMAIL_SIZE);
 }
 
 void deserialize_row(void* source, Row* destination) {
@@ -303,7 +303,7 @@ void print_row(Row* row) {
 Pager* pager_open(const char* filename) {
     int fd = open(filename, O_RDWR | O_CREAT, S_IWUSR | S_IRUSR);
 
-    if (fd < 0) {
+    if (fd == -1) {
         printf("Unable to open file.\n");
         exit(EXIT_FAILURE);
     }
@@ -312,7 +312,7 @@ Pager* pager_open(const char* filename) {
 
     Pager* pager = malloc(sizeof(Pager));
     pager->file_descriptor = fd;
-    pager->file_length;
+    pager->file_length = file_length;
 
     for (uint32_t i = 0; i < TABLE_MAX_PAGES; i++) {
         pager->pages[i] = NULL;
